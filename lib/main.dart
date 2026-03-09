@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/progress_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/profile_setup_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -23,19 +24,21 @@ void main() async {
   );
 
   final prefs = await SharedPreferences.getInstance();
+  final isNewUser = (prefs.getString('profile_name') ?? '').isEmpty;
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const LinguaApp(),
+      child: LinguaApp(isNewUser: isNewUser),
     ),
   );
 }
 
 class LinguaApp extends StatelessWidget {
-  const LinguaApp({super.key});
+  final bool isNewUser;
+  const LinguaApp({super.key, required this.isNewUser});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,7 @@ class LinguaApp extends StatelessWidget {
       title: 'Lingua',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const HomeScreen(),
+      home: isNewUser ? const ProfileSetupScreen() : const HomeScreen(),
     );
   }
 }
