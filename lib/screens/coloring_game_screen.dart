@@ -71,19 +71,40 @@ Path _naturaPath(String id, Size s) {
     case 'sky':        return Path()..addRect(Rect.fromLTWH(0, 0, w, h * 0.52));
     case 'grass':      return Path()..addRect(Rect.fromLTWH(0, h * 0.52, w, h * 0.48));
     case 'sun':        return Path()..addOval(Rect.fromCircle(center: Offset(w * 0.78, h * 0.2), radius: w * 0.11));
-    case 'treeLeaves': return Path()..addOval(Rect.fromCircle(center: Offset(w * 0.28, h * 0.36), radius: w * 0.14));
+    case 'treeLeaves': {
+      // Rounded crown / dome shape — much more tree-like than a plain circle
+      final cx = w * 0.28; final cy = h * 0.35;
+      final r = w * 0.16;
+      final path = Path();
+      path.moveTo(cx - r * 0.75, cy + r * 0.55);
+      path.quadraticBezierTo(cx - r * 1.15, cy - r * 0.2, cx, cy - r);
+      path.quadraticBezierTo(cx + r * 1.15, cy - r * 0.2, cx + r * 0.75, cy + r * 0.55);
+      path.lineTo(cx + r * 0.55, cy + r * 0.75);
+      path.lineTo(cx - r * 0.55, cy + r * 0.75);
+      path.close();
+      return path;
+    }
     case 'treeTrunk':  return Path()..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.235, h * 0.48, w * 0.09, h * 0.1), const Radius.circular(4)));
+        Rect.fromLTWH(w * 0.245, h * 0.49, w * 0.08, h * 0.10), const Radius.circular(4)));
     case 'flower': {
+      // Pointed petal shape using bezier curves — each petal tapers at the tip
       final cx = w * 0.63; final cy = h * 0.51;
-      final pr = w * 0.045; final pd = w * 0.055;
+      final pLen = w * 0.10; final pW = w * 0.038;
       final path = Path();
       for (int i = 0; i < 5; i++) {
-        final angle = (i * 72 - 90) * pi / 180;
-        path.addOval(Rect.fromCircle(
-            center: Offset(cx + pd * cos(angle), cy + pd * sin(angle)), radius: pr));
+        final a = (i * 72 - 90) * pi / 180;
+        final perp = a + pi / 2;
+        final tipX = cx + pLen * 2 * cos(a);
+        final tipY = cy + pLen * 2 * sin(a);
+        final c1x = cx + pLen * cos(a) + pW * cos(perp);
+        final c1y = cy + pLen * sin(a) + pW * sin(perp);
+        final c2x = cx + pLen * cos(a) - pW * cos(perp);
+        final c2y = cy + pLen * sin(a) - pW * sin(perp);
+        path.moveTo(cx, cy);
+        path.quadraticBezierTo(c1x, c1y, tipX, tipY);
+        path.quadraticBezierTo(c2x, c2y, cx, cy);
       }
-      path.addOval(Rect.fromCircle(center: Offset(cx, cy), radius: pr * 0.9));
+      path.addOval(Rect.fromCircle(center: Offset(cx, cy), radius: pW * 1.3));
       return path;
     }
     default: return Path();
@@ -94,16 +115,40 @@ Path _naturaPath(String id, Size s) {
 Path _macchinaPath(String id, Size s) {
   final w = s.width; final h = s.height;
   switch (id) {
-    case 'sky':     return Path()..addRect(Rect.fromLTWH(0, 0, w, h * 0.47));
-    case 'road':    return Path()..addRect(Rect.fromLTWH(0, h * 0.75, w, h * 0.25));
-    case 'carBody': return Path()..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.04, h * 0.47, w * 0.92, h * 0.32), const Radius.circular(18)));
-    case 'carRoof': return Path()..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.2, h * 0.27, w * 0.6, h * 0.24), const Radius.circular(14)));
-    case 'wheel1':  return Path()..addOval(Rect.fromCircle(
-        center: Offset(w * 0.25, h * 0.77), radius: h * 0.09));
-    case 'wheel2':  return Path()..addOval(Rect.fromCircle(
-        center: Offset(w * 0.75, h * 0.77), radius: h * 0.09));
+    case 'sky':  return Path()..addRect(Rect.fromLTWH(0, 0, w, h * 0.44));
+    case 'road': return Path()..addRect(Rect.fromLTWH(0, h * 0.74, w, h * 0.26));
+    case 'carBody': {
+      // Real car silhouette: hexagonal shape with slanted windshields
+      final path = Path();
+      path.moveTo(w * 0.06, h * 0.71);                                           // front bottom-left
+      path.lineTo(w * 0.94, h * 0.71);                                           // rear bottom-right
+      path.quadraticBezierTo(w * 0.97, h * 0.71, w * 0.97, h * 0.65);          // rear bottom corner
+      path.lineTo(w * 0.97, h * 0.58);                                           // rear vertical
+      path.quadraticBezierTo(w * 0.95, h * 0.51, w * 0.88, h * 0.49);          // trunk slope
+      path.lineTo(w * 0.72, h * 0.40);                                           // rear windshield bottom
+      path.lineTo(w * 0.30, h * 0.40);                                           // front windshield bottom
+      path.lineTo(w * 0.16, h * 0.49);                                           // front windshield slope
+      path.quadraticBezierTo(w * 0.07, h * 0.51, w * 0.04, h * 0.58);          // hood curve
+      path.lineTo(w * 0.04, h * 0.65);                                           // front vertical
+      path.quadraticBezierTo(w * 0.04, h * 0.71, w * 0.06, h * 0.71);          // front bottom corner
+      path.close();
+      return path;
+    }
+    case 'carRoof': {
+      // Cabin / glass area — trapezoidal roof sitting above the body
+      final path = Path();
+      path.moveTo(w * 0.30, h * 0.40);                                           // front base
+      path.lineTo(w * 0.72, h * 0.40);                                           // rear base
+      path.quadraticBezierTo(w * 0.74, h * 0.26, w * 0.67, h * 0.25);          // rear curve
+      path.lineTo(w * 0.36, h * 0.25);                                           // top
+      path.quadraticBezierTo(w * 0.29, h * 0.26, w * 0.30, h * 0.40);          // front curve
+      path.close();
+      return path;
+    }
+    case 'wheel1': return Path()..addOval(Rect.fromCircle(
+        center: Offset(w * 0.26, h * 0.78), radius: h * 0.085));
+    case 'wheel2': return Path()..addOval(Rect.fromCircle(
+        center: Offset(w * 0.74, h * 0.78), radius: h * 0.085));
     default: return Path();
   }
 }
@@ -136,17 +181,37 @@ Path _spiaggiaPath(String id, Size s) {
     case 'sun':   return Path()..addOval(Rect.fromCircle(
         center: Offset(w * 0.50, h * 0.32), radius: w * 0.11));
     case 'fish': {
+      // Teardrop body (fatter on left/head, tapering right) + V-tail on right
       final path = Path();
-      final fx = w * 0.65; final fy = h * 0.59;
-      path.addOval(Rect.fromLTWH(fx - w * 0.10, fy - h * 0.04, w * 0.18, h * 0.08));
-      path.moveTo(fx + w * 0.08, fy);
-      path.lineTo(fx + w * 0.16, fy - h * 0.055);
-      path.lineTo(fx + w * 0.16, fy + h * 0.055);
+      final cx = w * 0.62; final cy = h * 0.58;
+      final bw = w * 0.14; final bh = h * 0.055;
+      // Body: fat head (left) tapering to tail junction (right)
+      path.moveTo(cx - bw, cy);                              // nose (left)
+      path.cubicTo(cx - bw, cy - bh * 2.2,
+                   cx + bw * 0.6, cy - bh * 2.0,
+                   cx + bw, cy);                             // top curve
+      path.cubicTo(cx + bw * 0.6, cy + bh * 2.0,
+                   cx - bw, cy + bh * 2.2,
+                   cx - bw, cy);                             // bottom curve
+      // Tail fin: V-shape to the right of the body
+      path.moveTo(cx + bw, cy);
+      path.lineTo(cx + bw * 1.9, cy - bh * 2.2);
+      path.lineTo(cx + bw * 1.4, cy);
+      path.lineTo(cx + bw * 1.9, cy + bh * 2.2);
       path.close();
       return path;
     }
-    case 'shell': return Path()..addOval(Rect.fromCircle(
-        center: Offset(w * 0.25, h * 0.78), radius: w * 0.07));
+    case 'shell': {
+      // Scallop shell: fan of arcs from a base point
+      final sx = w * 0.25; final sy = h * 0.80;
+      final sr = w * 0.08;
+      final path = Path();
+      path.moveTo(sx - sr, sy);
+      path.arcTo(Rect.fromCircle(center: Offset(sx, sy), radius: sr),
+          pi, pi, false);
+      path.close();
+      return path;
+    }
     default: return Path();
   }
 }
@@ -190,25 +255,55 @@ Path _ciboPath(String id, Size s) {
     case 'background': return Path()..addRect(Rect.fromLTWH(0, 0, w, h));
     case 'table':      return Path()..addRect(Rect.fromLTWH(0, h * 0.60, w, h * 0.40));
     case 'apple': {
-      // Body
-      final path = Path()..addOval(Rect.fromCircle(
-          center: Offset(w * 0.3, h * 0.52), radius: m * 0.16));
+      // Classic apple silhouette: two lobes with a top indent and round bottom
+      final cx = w * 0.30; final cy = h * 0.51;
+      final r = m * 0.17;
+      final path = Path();
+      path.moveTo(cx, cy - r * 0.15);              // top-center indent
+      path.cubicTo(cx - r * 0.35, cy - r * 1.05,
+                   cx - r * 1.15, cy - r * 0.65,
+                   cx - r, cy);                      // left lobe
+      path.cubicTo(cx - r, cy + r,
+                   cx - r * 0.15, cy + r * 1.2,
+                   cx, cy + r * 1.1);               // left-bottom
+      path.cubicTo(cx + r * 0.15, cy + r * 1.2,
+                   cx + r, cy + r,
+                   cx + r, cy);                      // right-bottom
+      path.cubicTo(cx + r * 1.15, cy - r * 0.65,
+                   cx + r * 0.35, cy - r * 1.05,
+                   cx, cy - r * 0.15);               // right lobe back to top
+      path.close();
       return path;
     }
-    case 'appleStem': return Path()..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.305, h * 0.33, w * 0.025, h * 0.07), const Radius.circular(3)));
-    case 'leaf':       return Path()..addOval(
-        Rect.fromLTWH(w * 0.315, h * 0.34, w * 0.08, h * 0.05));
-    case 'iceCream': {
-      // Scoop (circle) + cone (triangle)
+    case 'appleStem': {
+      // Slightly curved stem
+      final cx = w * 0.30; final baseY = h * 0.34;
       final path = Path();
-      final cx = w * 0.70; final scoopY = h * 0.38;
+      path.moveTo(cx - w * 0.01, baseY + h * 0.04);
+      path.quadraticBezierTo(cx + w * 0.025, baseY + h * 0.01, cx + w * 0.012, baseY);
+      path.quadraticBezierTo(cx + w * 0.00, baseY - h * 0.005, cx - w * 0.015, baseY + h * 0.01);
+      path.close();
+      return path;
+    }
+    case 'leaf': {
+      // Pointed leaf shape beside the stem
+      final lx = w * 0.34; final ly = h * 0.36;
+      final path = Path();
+      path.moveTo(lx, ly + h * 0.03);              // base
+      path.quadraticBezierTo(lx + w * 0.08, ly - h * 0.01, lx + w * 0.07, ly + h * 0.03);
+      path.quadraticBezierTo(lx + w * 0.04, ly + h * 0.06, lx, ly + h * 0.03);
+      path.close();
+      return path;
+    }
+    case 'iceCream': {
+      // Cone only (Giallo) — no scoop, that's a separate region
+      final cx = w * 0.70;
       final r = m * 0.13;
-      path.addOval(Rect.fromCircle(center: Offset(cx, scoopY), radius: r));
-      // cone triangle
-      path.moveTo(cx - r * 0.9, scoopY + r * 0.5);
-      path.lineTo(cx + r * 0.9, scoopY + r * 0.5);
-      path.lineTo(cx, scoopY + r * 2.4);
+      final coneTopY = h * 0.38 + r * 0.65;
+      final path = Path();
+      path.moveTo(cx - r * 0.92, coneTopY);
+      path.quadraticBezierTo(cx, coneTopY - r * 0.08, cx + r * 0.92, coneTopY);
+      path.lineTo(cx, h * 0.38 + r * 2.6);
       path.close();
       return path;
     }

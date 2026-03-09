@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
+import '../data/vocabulary_data.dart';
 import '../models/progress.dart';
 import '../theme/app_theme.dart';
 import '../widgets/star_display.dart';
+import 'activity_picker_screen.dart';
+import 'map_screen.dart';
 
 class ResultsScreen extends StatefulWidget {
   final ActivityResult result;
+  final bool fromMap;
+  final int categoryIndex;
 
-  const ResultsScreen({super.key, required this.result});
+  const ResultsScreen({
+    super.key,
+    required this.result,
+    this.fromMap = false,
+    this.categoryIndex = 0,
+  });
 
   @override
   State<ResultsScreen> createState() => _ResultsScreenState();
@@ -45,6 +55,48 @@ class _ResultsScreenState extends State<ResultsScreen> {
     if (widget.result.starsEarned == 2) return 'Molto bene!';
     if (widget.result.starsEarned == 1) return 'Buon lavoro!';
     return 'Keep trying!';
+  }
+
+  bool get _hasNextLevel =>
+      widget.categoryIndex + 1 < VocabularyData.categories.length;
+
+  String get _continueLabel =>
+      widget.fromMap && _hasNextLevel ? 'Next Level' : 'Continue';
+
+  void _onContinue(BuildContext context) {
+    if (widget.fromMap && _hasNextLevel) {
+      final nextIndex = widget.categoryIndex + 1;
+      final nextCat = VocabularyData.categories[nextIndex];
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, _, _) => ActivityPickerScreen(
+            categoryId: nextCat.id,
+            fromMap: true,
+            categoryIndex: nextIndex,
+          ),
+          transitionsBuilder: (_, anim, _, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+              child: FadeTransition(opacity: anim, child: child),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
+    } else if (widget.fromMap) {
+      // Last level — go back to map
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MapScreen()),
+        (route) => route.isFirst,
+      );
+    } else {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
   }
 
   String get _subtitle {
@@ -169,20 +221,26 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     width: double.infinity,
                     height: 60,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                      },
+                      onPressed: () => _onContinue(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _continueLabel,
+                            style: const TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold),
+                          ),
+                          if (widget.fromMap && _hasNextLevel) ...[
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 26),
+                          ],
+                        ],
                       ),
                     ),
                   ).animate().fadeIn(delay: 1100.ms, duration: 500.ms),

@@ -8,8 +8,15 @@ import 'quiz_activity_screen.dart';
 
 class ActivityPickerScreen extends StatelessWidget {
   final String categoryId;
+  final bool fromMap;
+  final int categoryIndex;
 
-  const ActivityPickerScreen({super.key, required this.categoryId});
+  const ActivityPickerScreen({
+    super.key,
+    required this.categoryId,
+    this.fromMap = false,
+    this.categoryIndex = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +31,11 @@ class ActivityPickerScreen extends StatelessWidget {
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                FlashcardActivityScreen(categoryId: categoryId),
+            builder: (_) => FlashcardActivityScreen(
+              categoryId: categoryId,
+              fromMap: fromMap,
+              categoryIndex: categoryIndex,
+            ),
           ),
         ),
       ),

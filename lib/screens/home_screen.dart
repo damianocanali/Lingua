@@ -8,7 +8,7 @@ import 'map_screen.dart';
 import 'categories_screen.dart';
 import 'badges_screen.dart';
 import 'profile_setup_screen.dart';
-import 'coloring_game_screen.dart';
+
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -139,19 +139,6 @@ class HomeScreen extends ConsumerWidget {
                         builder: (_) => const CategoriesScreen())),
               ),
 
-              const SizedBox(height: 12),
-
-              _ModeCard(
-                emoji: '🎨',
-                title: 'Color & Create',
-                subtitle: 'Paint scenes, learn colours',
-                gradientColors: [AppColors.pink, const Color(0xFFFF9F43)],
-                delay: 640,
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const ColoringGameScreen())),
-              ),
 
               const SizedBox(height: 20),
 

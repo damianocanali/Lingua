@@ -151,7 +151,10 @@ class MapScreen extends ConsumerWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => ActivityPickerScreen(
-                                        categoryId: cat.id),
+                                      categoryId: cat.id,
+                                      fromMap: true,
+                                      categoryIndex: index,
+                                    ),
                                   ),
                                 ),
                               ),

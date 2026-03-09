@@ -11,8 +11,15 @@ import 'results_screen.dart';
 
 class FlashcardActivityScreen extends ConsumerStatefulWidget {
   final String categoryId;
+  final bool fromMap;
+  final int categoryIndex;
 
-  const FlashcardActivityScreen({super.key, required this.categoryId});
+  const FlashcardActivityScreen({
+    super.key,
+    required this.categoryId,
+    this.fromMap = false,
+    this.categoryIndex = 0,
+  });
 
   @override
   ConsumerState<FlashcardActivityScreen> createState() =>
@@ -91,7 +98,13 @@ class _FlashcardActivityScreenState
     ref.read(progressProvider.notifier).completeActivity(result);
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => ResultsScreen(result: result)),
+      MaterialPageRoute(
+        builder: (_) => ResultsScreen(
+          result: result,
+          fromMap: widget.fromMap,
+          categoryIndex: widget.categoryIndex,
+        ),
+      ),
     );
   }
 
